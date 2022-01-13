@@ -1,0 +1,122 @@
+Tetris plan: use numpy (np)
+  https://tetris.fandom.com/wiki/Tetris_Guideline
+
+game-board (tetrion)
+  matrix Size
+    rows: 20 // row 21,22 are for spawning in pieces
+    columns: 10
+  pieces cannot move outside of dimensions of game-board
+  display-next-piece - when a piece enters the field, the next piece is displayed
+  pieces are spawned randomly // *randomizer https://tetris.wiki/TGM_randomizer
+    at row 21,22 (top) above the playable game-board and within columns 4,7 (mid)
+
+
+
+game pieces (name, color, size)
+  I block (line piece)
+    color: blue or cyan
+    (4,1) matrix
+      [1,
+       1,
+       1,
+       1,]
+
+  J block (left hook)
+    color: purple
+    (2,3) matrix
+      [1,0,0
+       1,1,1]
+
+  L block (right hook) / mirror to J block
+    color: orange
+    (2,3) matrix
+      [0,0,1
+       1,1,1]
+
+  O block (square)
+    color: yellow
+    (2,2) matrix
+      [1,1
+       1,1]
+
+  S block (right turn)
+    color: green
+    (2,3) matrix
+      [0,1,1
+       1,1,0]
+
+  Z block (left turn) / mirror to S block
+    color: red
+    (2,3) matrix
+      [1,1,0
+       0,1,1]
+
+  T block (triangle)
+    color: purple
+    (2,3) matrix
+      [0,1,0
+       1,1,1]
+
+rotating pieces (states of tetronimoes)
+    the O block has one state
+    the S,Z,I blocks have two states
+    the L,J,T blocks have 4 states
+
+    logic for rotation
+      key-press (up/down) // clockwise/counter-clockwise
+
+moving pieces
+  drop: downwards motion
+    gravity (automatic drop)
+      0.1G = 1 cell per 10 frames (default)
+      1G = 1 cell per frame
+  soft drop
+    increase gravity by key-press (down-arrow)
+      either 20 to 60 blocks per second // (assuming 60fps)
+      2G = 2 cells per frame
+      6G = 6 cells per frame
+  hard drop
+    increase gravity by key-press (spacebar)
+      20G = 20 cells per frame
+
+  left and right shifting
+    Delayed Auto Shift (DAS) (holding the L/R-key)
+      delay between holding the directional key and the auto-shifting of gravity
+      *auto-repeat rate* - the rate at which input repeats (either milliseconds or frames)
+    L/R press (not hold) - no delay in gravity, just a rotation of the piece
+
+piece & board interaction
+  locking (coincides with drop) - pieces are in a fixed position
+    lock delay - half second delay (30frames) a piece waits on the ground before locking
+      can shift or rotate block within this timeframe (*twists/spin-moves)
+        reset if not grounded after this timeframe (free space below)
+  line clear - row disappears when filled
+    above pieces shift downwards (settle) upon cleared line (naive gravity)
+      this leaves floating blocks (opposed to sticky gravity - *another mode*)
+    points per clear (single-1,double-3,triple-5,tetris-8)
+      *combos later* back-to-back tetris - 12points
+    *optional delay after clear - 1/2 second
+
+
+initial state (start-screen)
+  display tabs (play, controls, quit)
+    play-tab - initializes tetris, key-press to start
+      (later add next-piece tab)
+    controls-tab - displays all applicable controls
+      arrow keys:
+        L/R shifting
+        Down - soft drop
+        Up - 180 rotate
+      Spacebar - hard drop
+      Z,X - rotate piece clockwise, counter clockwise
+      escape - pause (displays over screen)
+      **add storing pieces later**
+    quit-tab (should prompt to exit program)
+
+
+play-modes
+  timed - 2-3 minute (scored)
+  40 lines - timed and scored
+lose - top out
+  a game piece cannot be placed within the play zone
+  *later* - garbage pieces are sent, pushing top pieces to spawn zone
